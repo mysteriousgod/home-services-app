@@ -1,6 +1,10 @@
+'use client'
+
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Alert, AlertDescription } from './ui';
 import { Mail, User, Briefcase } from 'lucide-react';
+import { login, register } from '../services/api';
 
 interface FormState {
   email: string;
@@ -12,6 +16,7 @@ interface FormState {
 }
 
 const SignInSignUp: React.FC = () => {
+  const router = useRouter();
   const [formState, setFormState] = useState<FormState>({
     email: '',
     password: '',
@@ -19,6 +24,7 @@ const SignInSignUp: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -35,22 +41,34 @@ const SignInSignUp: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isSignUp) {
-      if (!formState.category) {
-        setMessage('Please select a category (Customer or Builder).');
-        return;
+    setIsLoading(true);
+    setMessage('');
+
+    try {
+      if (isSignUp) {
+        await register(formState);
+        setMessage('Account created successfully. You can now sign in.');
+      } else {
+        const response = await login(formState.email, formState.password);
+        setMessage('Signed in successfully!');
+        // Redirect based on user type
+        if (response.userType === 'customer') {
+          router.push('/customer-dashboard');
+        } else {
+          router.push('/builder-dashboard');
+        }
       }
-      if (formState.category === 'builder' && (!formState.profession || !formState.experience || !formState.skills)) {
-        setMessage('Please fill in all builder-specific fields.');
-        return;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        setMessage(error.response.data.message || 'An error occurred. Please try again.');
+      } else {
+        setMessage('An unexpected error occurred. Please try again.');
       }
-      setMessage(`Verification email sent. Please check your inbox. Category: ${formState.category}`);
-    } else {
-      setMessage('Sign in successful!');
+    } finally {
+      setIsLoading(false);
     }
-    setIsOpen(false);
   };
 
   return (
@@ -143,8 +161,12 @@ const SignInSignUp: React.FC = () => {
                     />
                   </>
                 )}
-                <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
-                  {isSignUp ? 'Create Account' : 'Sign In'}
+                <Button 
+                  type="submit" 
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
                 </Button>
               </form>
               <div className="mt-4 text-center">
@@ -153,6 +175,7 @@ const SignInSignUp: React.FC = () => {
                   onClick={() => {
                     setIsSignUp(!isSignUp);
                     setFormState(prev => ({ ...prev, category: undefined, profession: undefined, experience: undefined, skills: undefined }));
+                    setMessage('');
                   }}
                   className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
