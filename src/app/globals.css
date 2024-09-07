@@ -3,25 +3,130 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #1e293b;
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --secondary: #e2e8f0;
+  --secondary-foreground: #475569;
+  --accent: #818cf8;
+  --accent-foreground: #ffffff;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --card: #ffffff;
+  --card-foreground: #1e293b;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #4f46e5;
+  --radius: 0.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #e2e8f0;
+  --accent: #6366f1;
+  --accent-foreground: #ffffff;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --card: #1e293b;
+  --card-foreground: #e2e8f0;
+  --border: #334155;
+  --input: #334155;
+  --ring: #6366f1;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Hide scrollbar when not hovering */
+::-webkit-scrollbar-thumb {
+  visibility: hidden;
+}
+
+/* Show scrollbar on hover */
+:hover::-webkit-scrollbar-thumb {
+  visibility: visible;
+}
+
+/* Ensure the scrollbar doesn't cause layout shift */
+@supports (scrollbar-gutter: stable) {
+  body {
+    scrollbar-gutter: stable;
+  }
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.5) transparent;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+  }
+
+  * {
+    scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
+  }
+}
+/* Show scrollbar when scrolling */
+.is-scrolling::-webkit-scrollbar-thumb {
+  visibility: visible;
+}
+
+/* Apply to any element that should have this scrollbar behavior */
+.scrollable {
+  overflow: auto;
+}
+/* Add RGB values for colors to use in rgba() */
+:root {
+  --background-rgb: 248, 250, 252;
+  --muted-foreground-rgb: 100, 116, 139;
+  --secondary-foreground-rgb: 71, 85, 105;
+}
+
+.dark {
+  --background-rgb: 15, 23, 42;
+  --muted-foreground-rgb: 148, 163, 184;
+  --secondary-foreground-rgb: 226, 232, 240;
 }
