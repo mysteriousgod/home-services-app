@@ -4,7 +4,7 @@
 import Link from 'next/link'
 import { ReactNode, useState, useEffect } from 'react'
 import '@/app/globals.css'
-
+import  SignInSignUp  from '@/components/SignInSignUp'
 export default function RootLayout({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState('light')
 
@@ -40,7 +40,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                     </Link>
                   </div>
                 </div>
-                <div className="flex items-center">
+                <div className="flex gap-4 items-center">
+                  <SignInSignUp/>
                   <button
                     onClick={toggleTheme}
                     className="p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"

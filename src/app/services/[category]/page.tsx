@@ -1,5 +1,5 @@
 // src/app/services/[category]/page.tsx
-import ServiceCard from '@/component/ServiceCard'
+import ServiceCard from '@/components/ServiceCard'
 import { Category } from '@/types'
 interface Service {
     id: number;
