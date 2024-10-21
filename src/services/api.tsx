@@ -1,6 +1,7 @@
+// src/services/api.ts
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -9,15 +10,16 @@ const api = axios.create({
   },
 });
 
-interface LoginResponse {
+export interface LoginResponse {
+  id: string;
   token: string;
   userType: 'customer' | 'builder';
 }
 
-interface RegisterData {
+export interface RegisterData {
   email: string;
   password: string;
-  category: 'customer' | 'builder';
+  userType: 'customer' | 'builder';
   profession?: string;
   experience?: string;
   skills?: string;

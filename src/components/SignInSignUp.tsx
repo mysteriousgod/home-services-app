@@ -1,43 +1,39 @@
-'use client'
-
+// src/components/SignInSignUp.tsx
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, Button, Input, Alert, AlertDescription } from './ui';
-import { Mail, User, Briefcase } from 'lucide-react';
-import { login, register } from '../services/api';
+import { Card, CardContent, CardHeader, CardTitle, Button, Input, Alert, AlertDescription, Select } from './ui';
+import { Mail } from 'lucide-react';
+import { login, register, RegisterData, LoginResponse } from '../services/api';
+import { setCredentials } from '@/store/auth-slice';
+import { AppDispatch } from '@/store/slice';
+import axios from 'axios';
 
 interface FormState {
   email: string;
   password: string;
-  category?: 'customer' | 'builder';
-  profession?: string;
-  experience?: string;
-  skills?: string;
+  confirmPassword: string;
+  userType: 'customer' | 'builder' | '';
 }
 
 const SignInSignUp: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const [formState, setFormState] = useState<FormState>({
     email: '',
     password: '',
+    confirmPassword: '',
+    userType: '',
   });
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
-  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormState(prevState => ({
       ...prevState,
       [name]: value,
-    }));
-  };
-
-  const handleCategorySelect = (category: 'customer' | 'builder') => {
-    setFormState(prevState => ({
-      ...prevState,
-      category,
     }));
   };
 
@@ -47,22 +43,38 @@ const SignInSignUp: React.FC = () => {
     setMessage('');
 
     try {
+      let response: LoginResponse;
       if (isSignUp) {
-        await register(formState);
-        setMessage('Account created successfully. You can now sign in.');
-      } else {
-        const response = await login(formState.email, formState.password);
-        setMessage('Signed in successfully!');
-        // Redirect based on user type
-        if (response.userType === 'customer') {
-          router.push('/customer-dashboard');
-        } else {
-          router.push('/builder-dashboard');
+        if (formState.password !== formState.confirmPassword) {
+          throw new Error("Passwords don't match");
         }
+        if (!formState.userType) {
+          throw new Error("Please select a user type");
+        }
+        const registerData: RegisterData = {
+          email: formState.email,
+          password: formState.password,
+          userType: formState.userType as 'customer' | 'builder',
+        };
+        response = await register(registerData);
+        setMessage('Account created successfully. You are now signed in.');
+      } else {
+        response = await login(formState.email, formState.password);
+        setMessage('Signed in successfully!');
       }
+
+      dispatch(setCredentials({
+        userId: response.id,
+        token: response.token,
+        userType: response.userType,
+      }));
+
+      router.push('/dashboard');
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         setMessage(error.response.data.message || 'An error occurred. Please try again.');
+      } else if (error instanceof Error) {
+        setMessage(error.message);
       } else {
         setMessage('An unexpected error occurred. Please try again.');
       }
@@ -72,134 +84,65 @@ const SignInSignUp: React.FC = () => {
   };
 
   return (
-    <>
-      <Button onClick={() => setIsOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-        {isSignUp ? 'Sign Up' : 'Sign In'}
-      </Button>
-      {isOpen && (
-        <div className="z-10 fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
-          <Card className="w-full max-w-md max-h-[90vh] flex flex-col bg-white dark:bg-gray-800">
-            <CardHeader className="border-b border-gray-200 dark:border-gray-700">
-              <CardTitle className="text-2xl font-semibold text-indigo-600 dark:text-indigo-400">HomeServe</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-grow overflow-y-auto">
-              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                {isSignUp && (
-                  <div className="flex space-x-4 mb-4">
-                    <Button
-                      type="button"
-                      onClick={() => handleCategorySelect('customer')}
-                      className={`flex-1 transition-all duration-300 ease-in-out ${
-                        formState.category === 'customer'
-                          ? 'bg-indigo-600 text-white scale-105'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      <User className={`mr-2 h-4 w-4 ${formState.category === 'customer' ? 'animate-pulse' : ''}`} />
-                      Customer
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => handleCategorySelect('builder')}
-                      className={`flex-1 transition-all duration-300 ease-in-out ${
-                        formState.category === 'builder'
-                          ? 'bg-indigo-600 text-white scale-105'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      <Briefcase className={`mr-2 h-4 w-4 ${formState.category === 'builder' ? 'animate-pulse' : ''}`} />
-                      Builder
-                    </Button>
-                  </div>
-                )}
-                <Input
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  value={formState.email}
-                  onChange={handleInputChange}
-                  required
-                  className="border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
-                />
-                <Input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  value={formState.password}
-                  onChange={handleInputChange}
-                  required
-                  className="border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
-                />
-                {isSignUp && formState.category === 'builder' && (
-                  <>
-                    <Input
-                      type="text"
-                      name="profession"
-                      placeholder="Profession (e.g., Plumber, Electrician)"
-                      value={formState.profession || ''}
-                      onChange={handleInputChange}
-                      required
-                      className="border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
-                    />
-                    <Input
-                      type="text"
-                      name="experience"
-                      placeholder="Years of Experience"
-                      value={formState.experience || ''}
-                      onChange={handleInputChange}
-                      required
-                      className="border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
-                    />
-                    <Input
-                      type="text"
-                      name="skills"
-                      placeholder="Skills (comma-separated)"
-                      value={formState.skills || ''}
-                      onChange={handleInputChange}
-                      required
-                      className="border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
-                    />
-                  </>
-                )}
-                <Button 
-                  type="submit" 
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
-                </Button>
-              </form>
-              <div className="mt-4 text-center">
-                <Button
-                  variant="link"
-                  onClick={() => {
-                    setIsSignUp(!isSignUp);
-                    setFormState(prev => ({ ...prev, category: undefined, profession: undefined, experience: undefined, skills: undefined }));
-                    setMessage('');
-                  }}
-                  className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-                >
-                  {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
-                </Button>
-              </div>
-              {message && (
-                <Alert className="mt-4 bg-indigo-100 border-indigo-300 text-indigo-800 dark:bg-indigo-900 dark:border-indigo-700 dark:text-indigo-200">
-                  <Mail className="h-4 w-4" />
-                  <AlertDescription>{message}</AlertDescription>
-                </Alert>
-              )}
-              <Button 
-                variant="ghost" 
-                className="mt-4 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100"
-                onClick={() => setIsOpen(false)}
+    <Card>
+      <CardHeader>
+        <CardTitle>{isSignUp ? 'Sign Up' : 'Sign In'}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit}>
+          <Input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formState.email}
+            onChange={handleInputChange}
+            required
+          />
+          <Input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formState.password}
+            onChange={handleInputChange}
+            required
+          />
+          {isSignUp && (
+            <>
+              <Input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={formState.confirmPassword}
+                onChange={handleInputChange}
+                required
+              />
+              <Select
+                name="userType"
+                value={formState.userType}
+                onChange={handleInputChange}
+                required
               >
-                Close
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    </>
+                <option value="">Select User Type</option>
+                <option value="customer">Customer</option>
+                <option value="builder">Builder</option>
+              </Select>
+            </>
+          )}
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Processing...' : (isSignUp ? 'Sign Up' : 'Sign In')}
+          </Button>
+        </form>
+        <Button variant="link" onClick={() => setIsSignUp(!isSignUp)}>
+          {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+        </Button>
+        {message && (
+          <Alert>
+            <Mail className="h-4 w-4" />
+            <AlertDescription>{message}</AlertDescription>
+          </Alert>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

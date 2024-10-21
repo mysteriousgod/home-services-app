@@ -14,10 +14,10 @@ export default function Home() {
   return (
     <div className="bg-white dark:bg-gray-800 transition-colors duration-200">
       <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
+    <div className="text-center">
+      <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
             <span className="block">Professional Home Services</span>
-            <span className="block text-indigo-600 dark:text-indigo-400">at Your Fingertips</span>
+      <span className="block text-indigo-600 dark:text-indigo-400">at Your Fingertips</span>
           </h1>
           <p className="mt-3 max-w-md mx-auto text-base text-gray-500 dark:text-gray-400 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
             Connect with top-rated local professionals for all your home service needs.
@@ -43,9 +43,14 @@ export default function Home() {
                     {service.name}
                   </span>
                 </div>
-              </Link>
+      </Link>
             ))}
           </div>
+          <h1 className="text-4xl font-bold mb-4">Welcome to HomeServe</h1>
+      <p className="mb-4">Find reliable home service professionals or offer your services.</p>
+      <Link href="/services" className="text-blue-500 hover:text-blue-700">
+        Explore Services
+      </Link>
         </div>
       </div>
     </div>
