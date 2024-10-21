@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, Button, Input, Alert, AlertDescription, Select } from './ui';
-import { Mail } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, Button, Input, Alert, AlertDescription } from './ui';
+import { Mail, User, Briefcase, Lock } from 'lucide-react';
 import { login, register, RegisterData, LoginResponse } from '../services/api';
 import { setCredentials } from '@/store/auth-slice';
 import { AppDispatch } from '@/store/slice';
@@ -29,7 +29,7 @@ const SignInSignUp: React.FC = () => {
   const [message, setMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormState(prevState => ({
       ...prevState,
@@ -69,7 +69,11 @@ const SignInSignUp: React.FC = () => {
         userType: response.userType,
       }));
 
-      router.push('/dashboard');
+      if (response.userType === 'builder') {
+        router.push('/builder-dashboard');
+      } else {
+        router.push('/customer-dashboard');
+      }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         setMessage(error.response.data.message || 'An error occurred. Please try again.');
@@ -83,31 +87,74 @@ const SignInSignUp: React.FC = () => {
     }
   };
 
+  const handleCategorySelect = (userType: 'customer' | 'builder') => {
+    setFormState(prevState => ({
+      ...prevState,
+      userType,
+    }));
+  };
+
   return (
-    <Card>
+    <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>{isSignUp ? 'Sign Up' : 'Sign In'}</CardTitle>
+        <CardTitle className="text-center">{isSignUp ? 'Create an Account' : 'Welcome Back'}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit}>
-          <Input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formState.email}
-            onChange={handleInputChange}
-            required
-          />
-          <Input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formState.password}
-            onChange={handleInputChange}
-            required
-          />
+        <form onSubmit={handleSubmit} className="space-y-4">
           {isSignUp && (
-            <>
+            <div className="flex space-x-4 mb-4">
+              <Button
+                type="button"
+                onClick={() => handleCategorySelect('customer')}
+                className={`flex-1 transition-all duration-300 ease-in-out ${
+                  formState.userType === 'customer'
+                    ? 'bg-indigo-600 text-white scale-105'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                <User className={`mr-2 h-4 w-4 ${formState.userType === 'customer' ? 'animate-pulse' : ''}`} />
+                Customer
+              </Button>
+              <Button
+                type="button"
+                onClick={() => handleCategorySelect('builder')}
+                className={`flex-1 transition-all duration-300 ease-in-out ${
+                  formState.userType === 'builder'
+                    ? 'bg-indigo-600 text-white scale-105'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                <Briefcase className={`mr-2 h-4 w-4 ${formState.userType === 'builder' ? 'animate-pulse' : ''}`} />
+                Builder
+              </Button>
+            </div>
+          )}
+          <div className="relative">
+            <Input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formState.email}
+              onChange={handleInputChange}
+              required
+              className="pl-10"
+            />
+            <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          </div>
+          <div className="relative">
+            <Input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formState.password}
+              onChange={handleInputChange}
+              required
+              className="pl-10"
+            />
+            <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          </div>
+          {isSignUp && (
+            <div className="relative">
               <Input
                 type="password"
                 name="confirmPassword"
@@ -115,28 +162,22 @@ const SignInSignUp: React.FC = () => {
                 value={formState.confirmPassword}
                 onChange={handleInputChange}
                 required
+                className="pl-10"
               />
-              <Select
-                name="userType"
-                value={formState.userType}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select User Type</option>
-                <option value="customer">Customer</option>
-                <option value="builder">Builder</option>
-              </Select>
-            </>
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            </div>
           )}
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading ? 'Processing...' : (isSignUp ? 'Sign Up' : 'Sign In')}
           </Button>
         </form>
-        <Button variant="link" onClick={() => setIsSignUp(!isSignUp)}>
-          {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
-        </Button>
+        <div className="mt-4 text-center">
+          <Button variant="link" onClick={() => setIsSignUp(!isSignUp)} className="text-sm">
+            {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+          </Button>
+        </div>
         {message && (
-          <Alert>
+          <Alert className="mt-4">
             <Mail className="h-4 w-4" />
             <AlertDescription>{message}</AlertDescription>
           </Alert>

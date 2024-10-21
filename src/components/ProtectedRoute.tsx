@@ -1,25 +1,28 @@
 // src/components/ProtectedRoute.tsx
+import { useRouter } from 'next/router';
 import { useSelector } from 'react-redux';
-import { selectIsAuthenticated } from '@/store/auth-slice';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { RootState } from '@/store/redux-store';
+import { selectIsAuthenticated, selectUserType } from '@/store/auth-slice';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
+const ProtectedRoute = (WrappedComponent: React.ComponentType, allowedUserType: 'customer' | 'builder') => {
+  return (props: any) => {
+    const router = useRouter();
+    const isAuthenticated = useSelector(selectIsAuthenticated);
+    const userType = useSelector(selectUserType);
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const isAuthenticated = useSelector((state: RootState) => selectIsAuthenticated(state));
-  const router = useRouter();
+    if (typeof window !== 'undefined') {
+      if (!isAuthenticated) {
+        router.replace('/login');
+        return null;
+      }
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
+      if (userType !== allowedUserType) {
+        router.replace('/unauthorized');
+        return null;
+      }
     }
-  }, [isAuthenticated, router]);
 
-  return isAuthenticated ? <>{children}</> : null;
+    return <WrappedComponent {...props} />;
+  };
 };
 
 export default ProtectedRoute;

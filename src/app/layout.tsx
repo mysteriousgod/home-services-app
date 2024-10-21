@@ -18,8 +18,10 @@ function InitializeAuth() {
   useEffect(() => {
     const token = Cookies.get('token')
     const userId = Cookies.get('userId')
-    if (token && userId) {
-      dispatch(setCredentials({ userId, token }))
+    const userType = Cookies.get('userType') as 'customer' | 'builder' | undefined
+
+    if (token && userId && userType) {
+      dispatch(setCredentials({ userId, token, userType }))
     }
   }, [dispatch])
 
@@ -28,8 +30,10 @@ function InitializeAuth() {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState('light')
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
+    setIsClient(true)
     if (theme === 'dark') {
       document.documentElement.classList.add('dark')
     } else {
@@ -57,7 +61,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                     <Navigation />
                   </div>
                   <div className="flex gap-4 items-center">
-                    <ProfileComponent />
+                    {isClient && <ProfileComponent />}
                     <button
                       onClick={toggleTheme}
                       className="p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"

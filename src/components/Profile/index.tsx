@@ -17,6 +17,11 @@ const ProfileComponent: React.FC = () => {
   const isAuthenticated = useSelector((state: RootState) => selectIsAuthenticated(state))
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -37,6 +42,11 @@ const ProfileComponent: React.FC = () => {
     Cookies.remove('userId')
     router.push('/')
     setIsOpen(false)
+  }
+
+  if (!isClient) {
+    // Return a placeholder during server-side rendering
+    return <div className="h-10 w-20 bg-gray-200 animate-pulse rounded"></div>;
   }
 
   if (!isAuthenticated) {
