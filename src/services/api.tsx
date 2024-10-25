@@ -1,5 +1,6 @@
 // src/services/api.ts
 import axios from 'axios';
+import { UserProfile } from '@/store/auth-slice';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -25,6 +26,7 @@ export interface RegisterData {
   skills?: string;
 }
 
+// Auth API functions
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
   const response = await api.post<LoginResponse>('/auth/signin', { email, password });
   if (response.data.token) {
@@ -41,32 +43,56 @@ export const register = async (userData: RegisterData): Promise<LoginResponse> =
   return response.data;
 };
 
-// Add more API functions as needed, for example:
-export const searchBuilders = async (searchTerm: string) => {
-  const response = await api.get(`/builders/search?term=${searchTerm}`);
+// Profile API functions
+export const getUserProfile = async (): Promise<UserProfile> => {
+  const response = await api.get<UserProfile>('/profile');
   return response.data;
 };
 
-export const getBuilderJobs = async () => {
-  const response = await api.get('/builder/jobs');
+export const updateProfile = async (profileData: UserProfile): Promise<UserProfile> => {
+  const response = await api.put<UserProfile>('/profile', profileData);
   return response.data;
 };
 
-export const updateJobStatus = async (jobId: string, status: string) => {
-  const response = await api.put(`/builder/jobs/${jobId}`, { status });
+export const uploadProfileImage = async (file: File): Promise<UserProfile> => {
+  const formData = new FormData();
+  formData.append('profileImage', file);
+
+  const response = await api.post<UserProfile>('/profile/upload-image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };
 
-// Interceptor to add token to requests
+export const deleteProfileImage = async (): Promise<UserProfile> => {
+  const response = await api.delete<UserProfile>('/profile/delete-image');
+  return response.data;
+};
+
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers['x-auth-token'] = token;
     }
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
     return Promise.reject(error);
   }
 );
