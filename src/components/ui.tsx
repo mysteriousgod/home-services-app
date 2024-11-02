@@ -56,7 +56,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button';
 
 // Input Component
-// Input Component
 type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -77,6 +76,30 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   )
 );
 Input.displayName = 'Input';
+// Select Component
+type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
+  className?: string;
+};
+
+export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+  ({ className, children, ...props }, ref) => (
+    <select
+      className={`flex h-10 w-full rounded-md border border-white/10 bg-white/10 backdrop-blur-md px-3 py-2 text-sm 
+      text-gray-900 
+      ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium 
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 
+      disabled:cursor-not-allowed disabled:opacity-50 
+      shadow-sm hover:shadow-md focus:shadow-lg
+      transition-all duration-300
+      ${className}`}
+      ref={ref}
+      {...props}
+    >
+      {children}
+    </select>
+  )
+);
+Select.displayName = 'Select';
 
 // Alert Components
 type AlertProps = CommonProps & {

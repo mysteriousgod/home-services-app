@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Alert, AlertDescription } from './ui';
 import { Mail, User, Briefcase } from 'lucide-react';
 import { login, register } from '../services/api';
+import axios from 'axios';
+import { useAppDispatch } from '@/store/hooks';
+import { setCredentials, logOut } from '@/store/auth-slice';
 
 interface FormState {
   email: string;
@@ -17,6 +20,8 @@ interface FormState {
 
 const SignInSignUp: React.FC = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  
   const [formState, setFormState] = useState<FormState>({
     email: '',
     password: '',
@@ -48,27 +53,83 @@ const SignInSignUp: React.FC = () => {
 
     try {
       if (isSignUp) {
-        await register(formState);
-        setMessage('Account created successfully. You can now sign in.');
-      } else {
-        const response = await login(formState.email, formState.password);
-        setMessage('Signed in successfully!');
-        // Redirect based on user type
-        if (response.userType === 'customer') {
-          router.push('/customer-dashboard');
-        } else {
-          router.push('/builder-dashboard');
+        if (!formState.category) {
+          setMessage('Please select a category');
+          setIsLoading(false);
+          return;
         }
+
+        const registerData = {
+          email: formState.email,
+          password: formState.password,
+          category: formState.category,
+          ...(formState.category === 'builder' && {
+            profession: formState.profession,
+            experience: formState.experience,
+            skills: formState.skills
+          })
+        };
+
+        const result = await register(registerData);
+        dispatch(setCredentials({
+          userId: result.userId,
+          token: result.token,
+          userType: result.userType
+        }));
+        
+        setMessage('Account created successfully!');
+        setTimeout(() => {
+          setIsOpen(false);
+          router.push(result.userType === 'customer' ? '/customer-dashboard' : '/builder-dashboard');
+        }, 1500);
+      } else {
+        const result = await login(formState.email, formState.password);
+        dispatch(setCredentials({
+          userId: result.userId,
+          token: result.token,
+          userType: result.userType
+        }));
+
+        setMessage('Signed in successfully!');
+        setTimeout(() => {
+          setIsOpen(false);
+          router.push(result.userType === 'customer' ? '/customer-dashboard' : '/builder-dashboard');
+        }, 1500);
       }
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        setMessage(error.response.data.message || 'An error occurred. Please try again.');
+      if (axios.isAxiosError(error)) {
+        setMessage(error.response?.data?.message || 'An error occurred. Please try again.');
+        if (error.response?.status === 401) {
+          dispatch(logOut());
+        }
       } else {
         setMessage('An unexpected error occurred. Please try again.');
       }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleModalClose = () => {
+    setIsOpen(false);
+    setMessage('');
+    setFormState({
+      email: '',
+      password: '',
+    });
+  };
+
+  const switchMode = () => {
+    setIsSignUp(!isSignUp);
+    setFormState({
+      email: '',
+      password: '',
+      category: undefined,
+      profession: undefined,
+      experience: undefined,
+      skills: undefined
+    });
+    setMessage('');
   };
 
   return (
@@ -80,7 +141,9 @@ const SignInSignUp: React.FC = () => {
         <div className="z-10 fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
           <Card className="w-full max-w-md max-h-[90vh] flex flex-col bg-white dark:bg-gray-800">
             <CardHeader className="border-b border-gray-200 dark:border-gray-700">
-              <CardTitle className="text-2xl font-semibold text-indigo-600 dark:text-indigo-400">HomeServe</CardTitle>
+              <CardTitle className="text-2xl font-semibold text-indigo-600 dark:text-indigo-400">
+                {isSignUp ? 'Create Account' : 'Welcome Back'}
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex-grow overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-4 mt-4">
@@ -172,11 +235,7 @@ const SignInSignUp: React.FC = () => {
               <div className="mt-4 text-center">
                 <Button
                   variant="link"
-                  onClick={() => {
-                    setIsSignUp(!isSignUp);
-                    setFormState(prev => ({ ...prev, category: undefined, profession: undefined, experience: undefined, skills: undefined }));
-                    setMessage('');
-                  }}
+                  onClick={switchMode}
                   className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
                   {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
@@ -191,7 +250,7 @@ const SignInSignUp: React.FC = () => {
               <Button 
                 variant="ghost" 
                 className="mt-4 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100"
-                onClick={() => setIsOpen(false)}
+                onClick={handleModalClose}
               >
                 Close
               </Button>
