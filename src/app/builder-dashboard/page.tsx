@@ -1,157 +1,393 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Input } from '@/components/ui';
-import { Upload, DollarSign, Star, Briefcase } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, Button, Input, Select } from '@/components/ui';
+import { Search, Star, Filter, MapPin, Clock, DollarSign, MessageCircle, Calendar } from 'lucide-react';
+import { useAppSelector } from '@/store/hooks';
+import { selectCurrentUser } from '@/store/auth-slice';
+
+interface Builder {
+  id: string;
+  name: string;
+  profession: string;
+  experience: string;
+  skills: string[];
+  rating: number;
+  completedJobs: number;
+  hourlyRate: number;
+  availability: 'Available' | 'Busy' | 'Away';
+  location: string;
+  avatar: string;
+  responseTime: string;
+  verificationStatus: boolean;
+  recentReviews: Review[];
+}
+
+interface Review {
+  id: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
 
 interface Job {
   id: string;
   title: string;
   description: string;
   status: 'pending' | 'in-progress' | 'completed';
+  builder?: Builder;
   price: number;
+  startDate?: string;
+  endDate?: string;
+  location: string;
+  category: string;
 }
 
-interface Builder {
-  name: string;
-  profession: string;
-  experience: string;
-  skills: string[];
-  rating: number;
-  totalEarnings: number;
-  completedJobs: number;
-}
+export default function CustomerDashboard() {
+  const currentUser = useAppSelector(selectCurrentUser);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [builders, setBuilders] = useState<Builder[]>([]);
+  const [activeJobs, setActiveJobs] = useState<Job[]>([]);
+  const [completedJobs, setCompletedJobs] = useState<Job[]>([]);
+  const [filters, setFilters] = useState({
+    profession: '',
+    minRating: 0,
+    maxPrice: 0,
+    availability: '',
+    location: ''
+  });
+  const [favoriteBuilders, setFavoriteBuilders] = useState<Builder[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-export default function BuilderDashboard() {
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [builderInfo, setBuilderInfo] = useState<Builder | null>(null);
-  const [projectImages, setProjectImages] = useState<string[]>([]);
+  const categories = [
+    'All',
+    'Plumbing',
+    'Electrical',
+    'Carpentry',
+    'Painting',
+    'Gardening',
+    'Cleaning',
+    'HVAC',
+    'Roofing'
+  ];
 
   useEffect(() => {
-    // TODO: Implement API call to fetch builder's info and jobs
-    const mockBuilder: Builder = {
-      name: "John Doe",
-      profession: "Plumber",
-      experience: "5 years",
-      skills: ["Pipe fitting", "Water heater installation", "Leak repair"],
-      rating: 4.8,
-      totalEarnings: 15000,
-      completedJobs: 50
-    };
-    setBuilderInfo(mockBuilder);
-
-    const mockJobs: Job[] = [
-      { id: '1', title: 'Fix leaky faucet', description: 'Kitchen sink is leaking', status: 'pending', price: 100 },
-      { id: '2', title: 'Rewire living room', description: 'New lighting installation needed', status: 'in-progress', price: 250 },
-      { id: '3', title: 'Install water heater', description: 'Replace old water heater', status: 'completed', price: 500 },
-    ];
-    setJobs(mockJobs);
-
-    // Mock project images
-    setProjectImages(['/project1.jpg', '/project2.jpg', '/project3.jpg']);
+    // TODO: Fetch data from API
+    fetchMockData();
   }, []);
 
-  const updateJobStatus = (jobId: string, newStatus: 'pending' | 'in-progress' | 'completed') => {
-    setJobs(jobs.map(job => job.id === jobId ? { ...job, status: newStatus } : job));
-    // TODO: Implement API call to update job status
+  const fetchMockData = () => {
+    const mockBuilders: Builder[] = [
+      {
+        id: '1',
+        name: 'John Doe',
+        profession: 'Plumber',
+        experience: '5 years',
+        skills: ['Plumbing', 'Pipe fitting', 'Water heater installation'],
+        rating: 4.8,
+        completedJobs: 150,
+        hourlyRate: 75,
+        availability: 'Available',
+        location: 'New York, NY',
+        avatar: '/avatars/builder1.jpg',
+        responseTime: '< 1 hour',
+        verificationStatus: true,
+        recentReviews: [
+          {
+            id: '1',
+            userId: 'user1',
+            userName: 'Alice Johnson',
+            rating: 5,
+            comment: 'Excellent work! Very professional and clean.',
+            date: '2024-02-15'
+          }
+        ]
+      },
+      // Add more mock builders...
+    ];
+
+    const mockActiveJobs: Job[] = [
+      {
+        id: '1',
+        title: 'Bathroom Renovation',
+        description: 'Complete renovation of master bathroom',
+        status: 'in-progress',
+        price: 2500,
+        startDate: '2024-03-01',
+        endDate: '2024-03-15',
+        location: 'New York, NY',
+        category: 'Plumbing'
+      }
+    ];
+
+    setBuilders(mockBuilders);
+    setActiveJobs(mockActiveJobs);
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // TODO: Implement actual image upload to server
-      const imageUrl = URL.createObjectURL(file);
-      setProjectImages([...projectImages, imageUrl]);
-    }
+  const handleSearch = async () => {
+    // TODO: Implement API search with filters
+    console.log('Searching with filters:', { searchTerm, filters });
+  };
+
+  const handleFavorite = (builderId: string) => {
+    // TODO: Implement favorite builder functionality
+    console.log('Toggling favorite for builder:', builderId);
+  };
+
+  const requestQuote = (builder: Builder) => {
+    // TODO: Implement quote request
+    console.log('Requesting quote from builder:', builder.id);
   };
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Builder Dashboard</h1>
-      
-      {builderInfo && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Your Profile</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h2 className="text-xl font-semibold">{builderInfo.name}</h2>
-                <p className="text-gray-600">{builderInfo.profession}</p>
-                <p className="mt-2"><Briefcase className="inline mr-2" />{builderInfo.experience}</p>
-                <p className="mt-2"><Star className="inline mr-2" />{builderInfo.rating} / 5</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Sidebar - User Profile & Stats */}
+        <div className="lg:col-span-1">
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <img 
+                  src={currentUser?.profileImage || '/default-avatar.jpg'} 
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full"
+                />
+                Welcome, {currentUser?.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold">Active Projects</h3>
+                  <p className="text-2xl text-blue-600">{activeJobs.length}</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold">Total Spent</h3>
+                  <p className="text-2xl text-green-600">
+                    <DollarSign className="inline h-5 w-5" />
+                    {activeJobs.reduce((sum, job) => sum + job.price, 0)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-semibold">Skills:</p>
-                <ul className="list-disc list-inside">
-                  {builderInfo.skills.map((skill, index) => (
-                    <li key={index}>{skill}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <div className="mt-4 flex justify-between">
-              <div>
-                <p className="font-semibold">Total Earnings</p>
-                <p className="text-2xl text-green-600"><DollarSign className="inline" />{builderInfo.totalEarnings}</p>
-              </div>
-              <div>
-                <p className="font-semibold">Completed Jobs</p>
-                <p className="text-2xl text-blue-600">{builderInfo.completedJobs}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Project Gallery</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {projectImages.map((image, index) => (
-              <img key={index} src={image} alt={`Project ${index + 1}`} className="w-full h-40 object-cover rounded-lg" />
+          {/* Filters */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Filter className="h-5 w-5" />
+                Filters
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Category</label>
+                <Select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  {categories.map((category) => (
+                    <option key={category} value={category.toLowerCase()}>
+                      {category}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Location</label>
+                <Input
+                  type="text"
+                  placeholder="Enter location"
+                  value={filters.location}
+                  onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Minimum Rating</label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="5"
+                  step="0.5"
+                  value={filters.minRating}
+                  onChange={(e) => setFilters({ ...filters, minRating: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Maximum Hourly Rate</label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="10"
+                  value={filters.maxPrice}
+                  onChange={(e) => setFilters({ ...filters, maxPrice: Number(e.target.value) })}
+                />
+              </div>
+              <Button onClick={handleSearch} className="w-full">
+                Apply Filters
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content */}
+        <div className="lg:col-span-2">
+          {/* Search Bar */}
+          <Card className="mb-6">
+            <CardContent className="p-4">
+              <div className="flex space-x-2">
+                <Input
+                  type="text"
+                  placeholder="Search for builders by name, skill, or profession"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1"
+                />
+                <Button onClick={handleSearch}>
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Active Jobs */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Active Projects</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {activeJobs.length === 0 ? (
+                <p className="text-gray-500">No active projects</p>
+              ) : (
+                <div className="space-y-4">
+                  {activeJobs.map((job) => (
+                    <Card key={job.id} className="bg-gray-50">
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-semibold">{job.title}</h3>
+                            <p className="text-sm text-gray-600">{job.description}</p>
+                            <div className="flex items-center gap-4 mt-2">
+                              <span className="flex items-center text-sm">
+                                <MapPin className="h-4 w-4 mr-1" />
+                                {job.location}
+                              </span>
+                              <span className="flex items-center text-sm">
+                                <Calendar className="h-4 w-4 mr-1" />
+                                {job.startDate}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-green-600">${job.price}</p>
+                            <span className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                              {job.status}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Builders List */}
+          <div className="grid grid-cols-1 gap-6">
+            {builders.map((builder) => (
+              <Card key={builder.id} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex justify-between">
+                    <div className="flex gap-4">
+                      <img
+                        src={builder.avatar}
+                        alt={builder.name}
+                        className="w-16 h-16 rounded-full object-cover"
+                      />
+                      <div>
+                        <h3 className="font-semibold flex items-center gap-2">
+                          {builder.name}
+                          {builder.verificationStatus && (
+                            <span className="text-blue-500">✓</span>
+                          )}
+                        </h3>
+                        <p className="text-gray-600">{builder.profession}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Star className="h-4 w-4 text-yellow-400" />
+                          <span>{builder.rating}</span>
+                          <span className="text-gray-500">
+                            ({builder.completedJobs} jobs)
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">${builder.hourlyRate}/hr</p>
+                      <p className="text-sm text-gray-500">
+                        <Clock className="h-4 w-4 inline mr-1" />
+                        {builder.responseTime}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-600 mb-2">Skills:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {builder.skills.map((skill, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-1 bg-gray-100 rounded-full text-xs"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {builder.recentReviews.length > 0 && (
+                    <div className="mt-4 border-t pt-4">
+                      <p className="text-sm font-semibold mb-2">Recent Review:</p>
+                      <div className="bg-gray-50 p-3 rounded">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Star className="h-4 w-4 text-yellow-400" />
+                          <span className="font-semibold">
+                            {builder.recentReviews[0].rating}/5
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            by {builder.recentReviews[0].userName}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          {builder.recentReviews[0].comment}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleFavorite(builder.id)}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      onClick={() => requestQuote(builder)}
+                    >
+                      Request Quote
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
-          <div className="mt-4">
-            <Input type="file" accept="image/*" onChange={handleImageUpload} />
-            <Button className="mt-2"><Upload className="mr-2" />Upload New Image</Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Jobs</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {jobs.map((job) => (
-            <Card key={job.id} className="mb-4">
-              <CardHeader>
-                <CardTitle>{job.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>{job.description}</p>
-                <p><strong>Status:</strong> {job.status}</p>
-                <p><strong>Price:</strong> ${job.price}</p>
-                <div className="mt-2 space-x-2">
-                  <Button onClick={() => updateJobStatus(job.id, 'pending')} disabled={job.status === 'pending'}>
-                    Pending
-                  </Button>
-                  <Button onClick={() => updateJobStatus(job.id, 'in-progress')} disabled={job.status === 'in-progress'}>
-                    In Progress
-                  </Button>
-                  <Button onClick={() => updateJobStatus(job.id, 'completed')} disabled={job.status === 'completed'}>
-                    Completed
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -9,25 +9,26 @@ import { selectIsAuthenticated, selectUserType } from '../store/auth-slice'
 import ClientOnly from './ClintOnly'
 
 export default function ClientLayout({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState('light')
-  const isAuthenticated = useAppSelector(selectIsAuthenticated)
-  const userType = useAppSelector(selectUserType)
+  const [theme, setTheme] = useState('light');
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const userType = useAppSelector(selectUserType);
 
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [theme])
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    setTheme(currentTheme);
+    document.documentElement.classList.toggle('dark', currentTheme === 'dark');
+  }, []);
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light')
-  }
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    localStorage.setItem('theme', newTheme);
+  };
 
   return (
     <div className="min-h-full">
-      <nav className="bg-white dark:bg-gray-800 shadow-sm">
+      <nav className="bg-background dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
@@ -74,7 +75,7 @@ export default function ClientLayout({ children }: { children: ReactNode }) {
         </div>
       </main>
 
-      <footer className="bg-white dark:bg-gray-800">
+      <footer className="bg-background dark:bg-gray-800">
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
           <div className="mt-8 md:mt-0 md:order-1">
             <p className="text-center text-base text-gray-400 dark:text-gray-500">

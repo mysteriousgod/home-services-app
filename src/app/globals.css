@@ -109,6 +109,7 @@ body {
     scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
   }
 }
+
 /* Show scrollbar when scrolling */
 .is-scrolling::-webkit-scrollbar-thumb {
   visibility: visible;
@@ -118,6 +119,7 @@ body {
 .scrollable {
   overflow: auto;
 }
+
 /* Add RGB values for colors to use in rgba() */
 :root {
   --background-rgb: 248, 250, 252;
