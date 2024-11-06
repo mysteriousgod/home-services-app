@@ -1,10 +1,13 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Input, Select } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, Button, Input, Select, Badge } from '@/components/ui';
 import { Search, Star, Filter, MapPin, Clock, DollarSign, MessageCircle, Calendar } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { selectCurrentUser } from '@/store/auth-slice';
+import SearchCard from '@/components/search-card';
+import userDefaultImage from "../../assets/icons8-user-default-64.png"
+import Image from 'next/image';
 
 interface Builder {
   id: string;
@@ -149,8 +152,8 @@ export default function CustomerDashboard() {
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <img 
-                  src={currentUser?.profileImage || '/default-avatar.jpg'} 
+                <Image
+                  src={currentUser?.profileImage || userDefaultImage}
                   alt="Profile"
                   className="w-10 h-10 rounded-full"
                 />
@@ -236,23 +239,45 @@ export default function CustomerDashboard() {
         {/* Main Content */}
         <div className="lg:col-span-2">
           {/* Search Bar */}
-          <Card className="mb-6">
+          {/* Search Bar */}
+          {/* <Card className="bg-[#1E1E1E] mb-6">
             <CardContent className="p-4">
-              <div className="flex space-x-2">
+              <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="Search for builders by name, skill, or profession"
+                  placeholder="Message ChatGPT"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1"
+                  className="flex-1 bg-[#2B2B2B] border-none text-white placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-md"
                 />
-                <Button onClick={handleSearch}>
-                  <Search className="h-4 w-4 mr-2" />
-                  Search
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 rounded-full hover:bg-[#2B2B2B] text-gray-400"
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                >
+                  <span className="sr-only">Scroll to top</span>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M3.33337 8.00004L8.00004 3.33337L12.6667 8.00004M8.00004 3.33337V12.6667"
+                      stroke="currentColor"
+                      strokeWidth="1.33333"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </Button>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
+          <SearchCard />
+
 
           {/* Active Jobs */}
           <Card className="mb-6">
@@ -266,7 +291,7 @@ export default function CustomerDashboard() {
                 <div className="space-y-4">
                   {activeJobs.map((job) => (
                     <Card key={job.id} className="bg-gray-50">
-                      <CardContent className="p-4">
+                      <CardContent className="p-">
                         <div className="flex justify-between items-start">
                           <div>
                             <h3 className="font-semibold">{job.title}</h3>
@@ -334,10 +359,10 @@ export default function CustomerDashboard() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4">
                     <p className="text-sm text-gray-600 mb-2">Skills:</p>
-                    <div className="flex flex-wrap gap-2">
+                    {/* <div className="flex flex-wrap gap-2">
                       {builder.skills.map((skill, index) => (
                         <span
                           key={index}
@@ -345,24 +370,33 @@ export default function CustomerDashboard() {
                         >
                           {skill}
                         </span>
+
                       ))}
-                    </div>
+                    </div> */}
+                    {builder.skills.map((skill, index) => (
+                      <>
+                        {" "}
+                        <Badge key={index} className="bg-primary/10 text-blue-800 p-2 rounded-md">
+                          {skill}
+                        </Badge>
+                      </>
+                    ))}
                   </div>
 
                   {builder.recentReviews.length > 0 && (
                     <div className="mt-4 border-t pt-4">
                       <p className="text-sm font-semibold mb-2">Recent Review:</p>
-                      <div className="bg-gray-50 p-3 rounded">
+                      <div className="background-surface-light p-3 rounded">
                         <div className="flex items-center gap-2 mb-1">
-                          <Star className="h-4 w-4 text-yellow-400" />
+                          <Star className="h-4 w-4 text-accent" />
                           <span className="font-semibold">
                             {builder.recentReviews[0].rating}/5
                           </span>
-                          <span className="text-sm text-gray-500">
+                          <span className=" text-text-primary">
                             by {builder.recentReviews[0].userName}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600">
+                        <p className=" text-text-secondary">
                           {builder.recentReviews[0].comment}
                         </p>
                       </div>
