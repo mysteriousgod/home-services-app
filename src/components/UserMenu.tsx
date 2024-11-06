@@ -4,15 +4,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User, LogOut, Settings } from 'lucide-react';
-import { useAppDispatch } from '../store/hooks';
-import { logOut } from '../store/auth-slice';
+import { useAppDispatch,useAppSelector } from '../store/hooks';
+import { logOut, selectCurrentUser } from '../store/auth-slice';
 import Cookies from 'js-cookie';
+import userDefaultImage from "../assets/icons8-user-default-64.png"
+import Image from 'next/image';
 
 interface UserMenuProps {
   userType: 'customer' | 'builder';
 }
 
 const UserMenu: React.FC<UserMenuProps> = ({ userType }) => {
+  const currentUser = useAppSelector(selectCurrentUser);
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -45,8 +48,12 @@ const UserMenu: React.FC<UserMenuProps> = ({ userType }) => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
       >
-        <User className="h-6 w-6" />
-        <span className="hidden md:inline">Profile</span>
+        <Image
+                  src={currentUser?.profileImage || userDefaultImage}
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full"
+                />
+        {/* <span className="hidden md:inline">Profile</span> */}
       </button>
       
       {isOpen && (
