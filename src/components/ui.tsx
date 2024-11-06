@@ -329,5 +329,18 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 Select.displayName = 'Select';
 
 
+export const AlertDescription = React.forwardRef<HTMLDivElement, CommonProps>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={`
+        text-sm [&_p]:leading-relaxed
+        ${className}
+      `}
+      {...props}
+    />
+  )
+);
+AlertDescription.displayName = 'AlertDescription';
 
 export * from 'lucide-react';

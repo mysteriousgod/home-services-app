@@ -8,6 +8,8 @@ import { selectCurrentUser } from '@/store/auth-slice';
 import SearchCard from '@/components/search-card';
 import userDefaultImage from "../../assets/icons8-user-default-64.png"
 import Image from 'next/image';
+import { UserProfile } from '@/store/auth-slice';
+import { getUserProfile } from '@/services/api';
 
 interface Builder {
   id: string;
@@ -78,6 +80,8 @@ export default function CustomerDashboard() {
 
   useEffect(() => {
     // TODO: Fetch data from API
+    const userProfile = getUserProfile();
+    console.log("================================================",userProfile)
     fetchMockData();
   }, []);
 

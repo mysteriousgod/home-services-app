@@ -82,7 +82,7 @@ const AlertComponent: React.FC<{
 
   return (
     <Alert
-      variant={type === 'success' ? 'default' : 'destructive'}
+      // variant={type === 'success' ? 'default' : 'destructive'}
       className="mb-6"
     >
       {type === 'success' ? (
@@ -153,7 +153,7 @@ const ProfilePage: React.FC = () => {
     if (userId) {
       loadProfile();
     } else {
-      router.push('/login');
+      // router.push('/login');
     }
   }, [userId, router, dispatch]);
 
